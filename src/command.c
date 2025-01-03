@@ -174,22 +174,43 @@ int uint8_setting(const char *cmd, const char *args, int query, char *prev_cmd,
 }
 
 int bool_setting(const char *cmd, const char *args, int query, char *prev_cmd,
-		bool *var, const char *name)
+		char *var, const char *name)
 {
-	bool val;
+	char val;
+	char string[10] = {0};
 
 	if (query) {
-		printf("%s\n", (*var ? "ON" : "OFF"));
+		switch(*var)
+		{
+			case 0:
+			default:
+			strncopy(string,"OFF",3);
+			break;
+
+			case 1:
+			strncopy(string,"ON",2);
+			break;
+
+			case 2:
+			strncopy(string,"PULSE", 5);
+			break;
+		}
+
+		printf("%s\n", string);
 		return 0;
 	}
 
 	if ((args[0] == '1' && args[1] == 0) || !strncasecmp(args, "true", 5)
-		|| !strncasecmp(args, "on", 3)) {
+		|| !strncasecmp(args, "1", 3)) {
 		val = true;
 	}
 	else if ((args[0] == '0' && args[1] == 0) || !strncasecmp(args, "false", 6)
-		|| !strncasecmp(args, "off", 4)) {
+		|| !strncasecmp(args, "0", 4)) {
 		val =  false;
+	}
+	else if ((args[0] == '2' && args[1] == 0) || !strncasecmp(args, "pulse", 6)
+		|| !strncasecmp(args, "2", 6)) {
+		val =  2;
 	} else {
 		log_msg(LOG_WARNING, "Invalid %s value: %s", name, args);
 		return 2;
@@ -495,15 +516,31 @@ int cmd_zero(const char *cmd, const char *args, int query, char *prev_cmd)
 int cmd_read(const char *cmd, const char *args, int query, char *prev_cmd)
 {
 	int i;
+	char string[10] = {0};
 
 	if (!query)
 		return 1;
 
 	for (i = 0; i < OUTPUT_COUNT; i++) {
+		switch(st->pwr[i])
+		{
+			case 0:
+			default:
+			strncopy(string,"OFF",3);
+			break;
+
+			case 1:
+			strncopy(string,"ON",2);
+			break;
+
+			case 2:
+			strncopy(string,"PULSE", 5);
+			break;
+		}
 		printf("output%d,\"%s\",%d,%s\n", i + 1,
 			conf->outputs[i].name,
 			st->pwm[i],
-			st->pwr[i] ? "ON": "OFF");
+			string);
 	}
 
 	return 0;
@@ -625,6 +662,7 @@ int cmd_out_default_pwm(const char *cmd, const char *args, int query, char *prev
 int cmd_out_default_state(const char *cmd, const char *args, int query, char *prev_cmd)
 {
 	int out, val;
+	char string[10] = {0};
 
 	out = atoi(&prev_cmd[6]) - 1;
 	if (out >= 0 && out < OUTPUT_COUNT) {
@@ -635,12 +673,31 @@ int cmd_out_default_state(const char *cmd, const char *args, int query, char *pr
 				val = 1;
 			else if (!strncasecmp(args, "off", 4))
 				val = 0;
+			else if (!strncasecmp(args, "pulse", 6))
+				val = 2;
 			else
 				val = 1;
+
 			if (val >= 0) {
+				switch(st->pwr[out])
+				{
+					case 0:
+					default:
+					strncopy(string,"OFF",3);
+					break;
+
+					case 1:
+					strncopy(string,"ON",2);
+					break;
+
+					case 2:
+					strncopy(string,"PULSE", 5);
+					break;
+				}
+
 				if (conf->outputs[out].default_state != val) {
 					log_msg(LOG_NOTICE, "output%d: change default state %s",
-						out + 1, (val ? "ON" : "OFF"));
+						out + 1, string);
 					conf->outputs[out].default_state = val;
 				}
 			} else {
@@ -681,6 +738,7 @@ int cmd_out_read(const char *cmd, const char *args, int query, char *prev_cmd)
 int cmd_write_state(const char *cmd, const char *args, int query, char *prev_cmd)
 {
 	int out, val;
+	char string[10] = {0};
 
 	if (query)
 		return 1;
@@ -696,13 +754,31 @@ int cmd_write_state(const char *cmd, const char *args, int query, char *prev_cmd
 			val = 1;
 		else if (!strncasecmp(args, "off", 4))
 			val = 0;
+		else if (!strncasecmp(args, "pulse", 6))
+			val = 2;
 		else
 			val = -1;
 
 		if (val >= 0) {
 			if (st->pwr[out] != val) {
+				switch(st->pwr[out])
+				{
+					case 0:
+					default:
+					strncopy(string,"OFF",3);
+					break;
+
+					case 1:
+					strncopy(string,"ON",2);
+					break;
+
+					case 2:
+					strncopy(string,"PULSE", 5);
+					break;
+				}
+
 				log_msg(LOG_INFO, "output%d: change power %s", out + 1,
-					(val ? "ON" : "OFF"));
+					string);
 				st->pwr[out] = val;
 			}
 			return 0;

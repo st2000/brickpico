@@ -86,13 +86,13 @@ struct pwm_output {
 	uint8_t min_pwm;
 	uint8_t max_pwm;
 	uint8_t default_pwm;   /* 0..100 (PWM duty cycle) */
-	uint8_t default_state; /* 0 = off, 1 = on */
+	uint8_t default_state; /* 0 = off, 1 = on, 2 = pulse */
 	uint8_t type; /* 0 = Dimmer, 1 = Toggle (on/off) */
 };
 
 struct brickpico_config {
 	struct pwm_output outputs[OUTPUT_MAX_COUNT];
-	bool local_echo;
+	char local_echo;
 	uint8_t led_mode;
 	char display_type[64];
 	char display_theme[16];
@@ -100,8 +100,8 @@ struct brickpico_config {
 	char display_layout_r[64];
 	char name[32];
 	char timezone[64];
-	bool spi_active;
-	bool serial_active;
+	char spi_active;
+	char serial_active;
 	uint pwm_freq;
 	struct timer_event events[MAX_EVENT_COUNT];
 	uint8_t event_count;
@@ -122,8 +122,8 @@ struct brickpico_config {
 	ip_addr_t gateway;
 	char mqtt_server[32];
 	uint32_t mqtt_port;
-	bool mqtt_tls;
-	bool mqtt_allow_scpi;
+	char mqtt_tls;
+	char mqtt_allow_scpi;
 	char mqtt_user[MQTT_MAX_USERNAME_LEN + 1];
 	char mqtt_pass[MQTT_MAX_PASSWORD_LEN + 1];
 	char mqtt_cmd_topic[MQTT_MAX_TOPIC_LEN + 1];
@@ -138,9 +138,9 @@ struct brickpico_config {
 	uint32_t mqtt_temp_interval;
 	uint16_t mqtt_pwm_mask;
 	char mqtt_ha_discovery_prefix[32 + 1];
-	bool telnet_active;
-	bool telnet_auth;
-	bool telnet_raw_mode;
+	char telnet_active;
+	char telnet_auth;
+	char telnet_raw_mode;
 	uint32_t telnet_port;
 	char telnet_user[16 + 1];
 	char telnet_pwhash[128 + 1];

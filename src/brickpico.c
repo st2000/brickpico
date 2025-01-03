@@ -317,7 +317,7 @@ int main()
 {
 	absolute_time_t ABSOLUTE_TIME_INITIALIZED_VAR(t_led, 0);
 	absolute_time_t ABSOLUTE_TIME_INITIALIZED_VAR(t_network, 0);
-	absolute_time_t t_now, t_last, t_display, t_timer, t_temp, t_ram;
+	absolute_time_t t_now, t_last, t_display, t_timer, t_temp, t_ram, t_pulse0, t_pulse1;
 	uint8_t led_state = 0;
 	int64_t max_delta = 0;
 	int64_t delta;
@@ -349,7 +349,7 @@ int main()
 #endif
 
 	t_last = get_absolute_time();
-	t_ram = t_temp = t_timer = t_display = t_last;
+	t_pulse1 = t_pulse0 = t_ram = t_temp = t_timer = t_display = t_last;
 
 	while (1) {
 		t_now = get_absolute_time();
@@ -364,6 +364,123 @@ int main()
 		if (time_passed(&t_network, 100)) {
 			network_poll();
 		}
+
+
+
+
+		if (time_passed(&t_pulse0, 10)) {
+			static uint led_ticker;
+			// Update pulse state machine and manage LED pulse lighting effects.
+
+			for(uint i = 0; i < 8; i++)
+			{
+
+				// printf("Ticker:%d cfg->outputs[%d].default_state: %d\n", led_ticker, i, cfg->outputs[i].default_state);
+
+				// uint led1_dutyCycle = 30;
+
+				// if(cfg->outputs[i].default_state == 1) // TODO: change this from 1 to 3 later.
+				// {
+				// 	if(led_ticker < led1_dutyCycle)
+				// 	{
+				// 		if(led_ticker < led1_dutyCycle/2)
+				// 		{
+				// 			// Run up the 1st half.
+				// 			set_pwm_duty_cycle(i, led_ticker * (100/(led1_dutyCycle/2)));
+				// 		}
+				// 		else
+				// 		{
+				// 			// Run down the 2st half.
+				// 			set_pwm_duty_cycle(i, (led1_dutyCycle - led_ticker) * (100/(led1_dutyCycle/2)));
+				// 		}
+				// 	}
+				// 	else
+				// 	{
+				// 		set_pwm_duty_cycle(i, 0);
+				// 	}
+				// }
+
+				uint led0_dutyCycle = 10;
+
+				if(cfg->outputs[i].default_state == 2)
+				{
+					if(led_ticker < led0_dutyCycle)
+					{
+						set_pwm_duty_cycle(i, 100);
+					}
+					else
+					{
+						set_pwm_duty_cycle(i, 0);
+					}
+				}
+			}
+			// Increment the 100 led state count.
+			led_ticker++;
+			if(led_ticker > 100)
+			{
+				led_ticker = 0;
+			}
+		}
+
+
+
+		if (time_passed(&t_pulse1, 30)) {
+			static uint led_ticker;
+			// Update pulse state machine and manage LED pulse lighting effects.
+
+			for(uint i = 0; i < 8; i++)
+			{
+
+				// printf("Ticker:%d cfg->outputs[%d].default_state: %d\n", led_ticker, i, cfg->outputs[i].default_state);
+
+				uint led1_dutyCycle = 30;
+
+				if(cfg->outputs[i].default_state == 1) // TODO: change this from 1 to 3 later.
+				{
+					if(led_ticker < led1_dutyCycle)
+					{
+						if(led_ticker < led1_dutyCycle/2)
+						{
+							// Run up the 1st half.
+							set_pwm_duty_cycle(i, led_ticker * (100/(led1_dutyCycle/2)));
+						}
+						else
+						{
+							// Run down the 2st half.
+							set_pwm_duty_cycle(i, (led1_dutyCycle - led_ticker) * (100/(led1_dutyCycle/2)));
+						}
+					}
+					else
+					{
+						set_pwm_duty_cycle(i, 0);
+					}
+				}
+
+				// uint led0_dutyCycle = 10;
+
+				// if(cfg->outputs[i].default_state == 2)
+				// {
+				// 	if(led_ticker < led0_dutyCycle)
+				// 	{
+				// 		set_pwm_duty_cycle(i, 100);
+				// 	}
+				// 	else
+				// 	{
+				// 		set_pwm_duty_cycle(i, 0);
+				// 	}
+				// }
+			}
+			// Increment the 100 led state count.
+			led_ticker++;
+			if(led_ticker > 100)
+			{
+				led_ticker = 0;
+			}
+		}
+
+
+
+
 		if (time_passed(&t_ram, 1000)) {
 			update_persistent_memory();
 		}
